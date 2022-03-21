@@ -1,8 +1,5 @@
-# Greenpeace Planet 4
+# ControlShift for Gravity Forms Wordpress plugin
 
-![Planet4](./planet4.png)
+ControlShift for Gravity Forms plugin allows you to connect WordPress Gravity Forms and [ControlShift](https://www.controlshiftlabs.com/).
 
-## Contribute
-
-The best place to start is from main [Planet 4 repo](https://github.com/greenpeace/planet4) that contains all the necessary information and tickets to get started.
-
+This plugin is being development by Greenpeace International [Planet 4 team](https://medium.com/planet4).
