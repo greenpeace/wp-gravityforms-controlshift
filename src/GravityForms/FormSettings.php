@@ -11,38 +11,39 @@ use GFFeedAddOn;
  */
 class FormSettings
 {
-	public static function fields(GFFeedAddOn $addOn, $form)
-	{
-		return [
-			[
-				'title' => 'Petitions',
-				'description' => 'All petitions.',
-				'fields' => [
-					[
-						'name' => 'petitions_list',
-						'type' => '',
-						'callback' => fn() => self::petitions_list($addOn),
-					],
-				],
-			],
-		];
-	}
+    public static function fields(GFFeedAddOn $addOn): array
+    {
+        return [
+            [
+                'title' => 'Petitions',
+                'description' => 'All petitions.',
+                'fields' => [
+                    [
+                        'name' => 'petitions_list',
+                        'type' => '',
+                        'callback' => fn() => self::petitionsList($addOn),
+                    ],
+                ],
+            ],
+        ];
+    }
 
-	private static function petitions_list($addOn)
-	{
-		$petitions = $addOn->api()->petitions();
-		echo '<ul>';
-		$tpl = '<li>
+    private static function petitionsList(GFFeedAddOn $addOn): void
+    {
+        $petitions = $addOn->api()->petitions();
+        echo '<ul>';
+        $tpl = '<li>
 			<a href="%s">%s</a> (%d/%d)
 		</li>';
-		foreach ($petitions as $petition) {
-			echo sprintf($tpl,
-				$petition['url'],
-				$petition['title'],
-				$petition['public_signature_count'] ?? 0,
-				$petition['goal'] ?? 0,
-			);
-		}
-		echo '</ul>';
-	}
+        foreach ($petitions as $petition) {
+            echo sprintf(
+                $tpl,
+                $petition['url'],
+                $petition['title'],
+                $petition['public_signature_count'] ?? 0,
+                $petition['goal'] ?? 0,
+            );
+        }
+        echo '</ul>';
+    }
 }
