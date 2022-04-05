@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace P4\ControlShift\API;
 
 use League\OAuth2\Client\Provider\AbstractProvider;
+use League\OAuth2\Client\Provider\GenericResourceOwner;
+use League\OAuth2\Client\Provider\ResourceOwnerInterface;
 use League\OAuth2\Client\Token\AccessToken;
 use League\OAuth2\Client\Tool\BearerAuthorizationTrait;
 use Psr\Http\Message\RequestInterface;
@@ -16,9 +18,10 @@ class OAuthProvider extends AbstractProvider
 
     private const DEFAULT_SCOPE = 'admin';
 
-    protected string $instance;
+    /** @var array{'scope': string} */
     protected ?array $scope;
     private ?ResponseInterface $lastResponse;
+    protected string $instance;
 
     /**
      * Returns the base URL for authorizing a client.
@@ -32,7 +35,7 @@ class OAuthProvider extends AbstractProvider
     /**
      * Returns the base URL for requesting an access token.
      *
-     * @param array $params
+     * @param array<string, string> $params
      */
     // phpcs:ignore SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter
     public function getBaseAccessTokenUrl(array $params): string
@@ -56,7 +59,7 @@ class OAuthProvider extends AbstractProvider
 
     /**
      * Get the default scopes used by this provider
-     * @return array
+     * @return array{'scope': string}
      */
     protected function getDefaultScopes(): array
     {
@@ -66,8 +69,8 @@ class OAuthProvider extends AbstractProvider
     /**
      * Checks a provider response for errors.
      *
-     * @throws IdentityProviderException
-     * @param  array|string $data Parsed response data
+     * @throws \League\OAuth2\Client\Provider\Exception\IdentityProviderException
+     * @param  array<string, string>|string $data Parsed response data
      */
     // phpcs:ignore SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter, SlevomatCodingStandard.TypeHints.ParameterTypeHint.MissingNativeTypeHint
     protected function checkResponse(ResponseInterface $response, $data): void
@@ -79,12 +82,12 @@ class OAuthProvider extends AbstractProvider
      * Generates a resource owner object from a successful resource owner
      * details request.
      *
-     * @param  array $response
+     * @param array<string, string> $response
      */
     // phpcs:ignore SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter
     protected function createResourceOwner(array $response, AccessToken $token): ResourceOwnerInterface
     {
-        return null;
+        return new GenericResourceOwner($response, '');
     }
 
     /**
@@ -92,7 +95,7 @@ class OAuthProvider extends AbstractProvider
      *
      * Typically this is used to set 'Accept' or 'Content-Type' headers.
      *
-     * @return array
+     * @return array{'Accept': string}
      */
     protected function getDefaultHeaders(): array
     {
@@ -104,11 +107,10 @@ class OAuthProvider extends AbstractProvider
     /**
      * Creates a PSR-7 request instance.
      *
-     * @param  AccessTokenInterface|string|null $token
      * @param  string $method
      * @param  string $url
-     * @param  array $token
-     * @param  array $options
+     * @param  \League\OAuth2\Client\Token\AccessTokenInterface|string|null $token
+     * @param  array<string, string> $options
      */
     // phpcs:ignore SlevomatCodingStandard.TypeHints.ParameterTypeHint.MissingNativeTypeHint
     protected function createRequest($method, $url, $token, array $options): RequestInterface

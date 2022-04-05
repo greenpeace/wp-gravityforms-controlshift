@@ -15,6 +15,9 @@ class AuthenticatedEndpoint
         return self::endpoint('/api/v1/organisation/email_opt_in_types');
     }
 
+    /**
+     * @param array<string, string>|null $args
+     */
     public static function events(?array $args = null): string
     {
         return self::endpoint(
@@ -23,6 +26,9 @@ class AuthenticatedEndpoint
         );
     }
 
+    /**
+     * @param array<string, string>|null $args
+     */
     public static function partnerships(?array $args = null): string
     {
         return self::endpoint(
@@ -31,6 +37,9 @@ class AuthenticatedEndpoint
         );
     }
 
+    /**
+     * @param array<string, string>|null $args
+     */
     public static function petitions(?array $args = null): string
     {
         return self::endpoint(

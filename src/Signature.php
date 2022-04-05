@@ -6,6 +6,9 @@ namespace P4\ControlShift;
 
 class Signature
 {
+    /**
+     * @var array<string, array<string, bool|string>>
+     */
     public static array $fields = [
         'first_name' => [
             'required' => true,

@@ -5,14 +5,18 @@ declare(strict_types=1);
 namespace P4\ControlShift\GravityForms;
 
 use P4\ControlShift\Signature;
-use GFFeedAddOn;
 
 /**
  * This page appears in the Form edition page, in the Settings tab
+ *
+ * @phpstan-import-type GFSection from ControlShiftAddOn
  */
 class FeedSettings
 {
-    public static function fields(GFFeedAddOn $addOn): array
+    /**
+     * @return array{GFSection}
+     */
+    public static function fields(ControlShiftAddOn $addOn): array
     {
         if (!$addOn->api()) {
             return [[
@@ -22,7 +26,9 @@ class FeedSettings
                 'fields' => [[
                     'name' => 'error_message',
                     'type' => '',
-                    'callback' => fn() => null,
+                    'callback' => function (): void {
+                        return;
+                    },
                 ]],
             ]];
         }
@@ -33,7 +39,10 @@ class FeedSettings
         ];
     }
 
-    private static function petition(GFFeedAddOn $addOn): array
+    /**
+     * @return GFSection
+     */
+    private static function petition(ControlShiftAddOn $addOn): array
     {
         return [
             'title' => 'Petitions',
@@ -48,7 +57,10 @@ class FeedSettings
         ];
     }
 
-    private static function mapFields(GFFeedAddOn $addOn): array
+    /**
+     * @return GFSection
+     */
+    private static function mapFields(ControlShiftAddOn $addOn): array
     {
         return [
             'title' => 'Map fields',
@@ -65,10 +77,15 @@ class FeedSettings
         ];
     }
 
-    private static function signatureFields(GFFeedAddOn $addOn): void
+    private static function signatureFields(ControlShiftAddOn $addOn): void
     {
         $controlshift_fields = Signature::$fields;
-        $form_fields = $addOn->get_form_fields_as_choices($addOn->get_current_form()) ?? [];
+        $form = $addOn->get_current_form();
+        if (!is_array($form)) {
+            return;
+        }
+
+        $form_fields = $addOn->get_form_fields_as_choices($form);
 
         $choices = array_merge(
             [['value' => '', 'label' => '']],
@@ -85,8 +102,12 @@ class FeedSettings
         }
     }
 
-    private static function petitionsList(GFFeedAddOn $addOn): void
+    private static function petitionsList(ControlShiftAddOn $addOn): void
     {
+        if (!$addOn->api()) {
+            return;
+        }
+
         $petitions = $addOn->api()->petitions();
         if (empty($petitions)) {
             echo '<p>No petition found.</p>';

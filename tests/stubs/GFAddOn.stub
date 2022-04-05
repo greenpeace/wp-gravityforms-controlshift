@@ -1,0 +1,38 @@
+<?php
+
+abstract class GFAddOn
+{
+    /**
+    * @return array|false
+    */
+    public function get_plugin_settings()
+    {}
+
+    public function get_field_value(
+        array $form,
+        array $entry,
+        string $field_id
+    ): string
+    {}
+
+    /**
+     * @return array|null|false If ID is found and is valid form, then the populated Form array is returned.
+     */
+    public function get_current_form()
+    {}
+
+    public function update_plugin_settings( array $settings ): bool
+    {}
+
+    public function get_form_fields_as_choices( array $form, array $args = [] ): array
+    {}
+
+    public function settings_select( array $field, bool $echo = true ): string
+    {}
+
+    public function settings_text( array $field, bool $echo = true ): string
+    {}
+
+    public static function register( string $class, ?string $overrides = null ): void
+    {}
+}

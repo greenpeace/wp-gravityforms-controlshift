@@ -4,15 +4,19 @@ declare(strict_types=1);
 
 namespace P4\ControlShift\GravityForms;
 
-use GFFeedAddOn;
 use League\OAuth2\Client\Token\AccessToken;
 
 /**
  * This page appears in the Forms > Settings menu, as a tab on the left
+ *
+ * @phpstan-import-type GFSection from ControlShiftAddOn
  */
 class PluginSettings
 {
-    public static function fields(GFFeedAddOn $addOn): array
+    /**
+     * @return array{GFSection}
+     */
+    public static function fields(ControlShiftAddOn $addOn): array
     {
         $fields = [
             self::appSettingsSection(),
@@ -20,27 +24,15 @@ class PluginSettings
         ];
 
         if (!empty($addOn->api())) {
-            $fields[] = [
-                'title' => 'Access Token',
-                'fields' => [
-                    [
-                        'name' => 'auth_token',
-                        'type' => '',
-                        'callback' => function () use ($addOn) {
-                            try {
-                                return self::authToken($addOn->getAuthToken());
-                            } catch (\Exception $e) {
-                                return $e->getMessage();
-                            }
-                        },
-                    ],
-                ],
-            ];
+            $fields[] = self::authTokenSection($addOn);
         }
 
         return $fields;
     }
 
+    /**
+     * @return GFSection
+     */
     private static function appSettingsSection(): array
     {
         return [
@@ -74,7 +66,10 @@ class PluginSettings
         ];
     }
 
-    private static function authCodeSection(GFFeedAddOn $addOn): array
+    /**
+     * @return GFSection
+     */
+    private static function authCodeSection(ControlShiftAddOn $addOn): array
     {
         return [
             'title' => 'Authorization Code',
@@ -90,7 +85,30 @@ class PluginSettings
         ];
     }
 
-    private static function authorizationCode(GFFeedAddOn $addOn): void
+    /**
+     * @return GFSection
+     */
+    private static function authTokenSection(ControlShiftAddOn $addOn): array
+    {
+        return [
+            'title' => 'Access Token',
+            'fields' => [
+                [
+                    'name' => 'auth_token',
+                    'type' => '',
+                    'callback' => function () use ($addOn): void {
+                        try {
+                            self::authToken($addOn->getAuthToken());
+                        } catch (\Exception $e) {
+                            echo $e->getMessage();
+                        }
+                    },
+                ],
+            ],
+        ];
+    }
+
+    private static function authorizationCode(ControlShiftAddOn $addOn): void
     {
         $addOn->settings_text([
             'label' => 'Authorization code',
@@ -112,6 +130,9 @@ class PluginSettings
 		</a> <<< and copy the given code here.</p>';
     }
 
+    /**
+     * @param array<string, string>|null $tokenData
+     */
     private static function authToken(?array $tokenData = null): void
     {
         if (empty($tokenData)) {
@@ -120,12 +141,15 @@ class PluginSettings
         }
 
         $token = new AccessToken($tokenData);
+        $expires = $token->getExpires();
 
         echo '<p>';
         echo 'Access Token: ' . $token->getToken() . "<br/>";
         echo 'Refresh Token: ' . $token->getRefreshToken() . "<br/>";
         echo 'Created at: ' . date('d/m/Y H:i:s', $token->getValues()['created_at']) . "<br/>";
-        echo 'Expires at: ' . date('d/m/Y H:i:s', $token->getExpires()) . "<br/>";
+        echo 'Expires at: ' . (
+            $expires ? date('d/m/Y H:i:s', $expires) : 'never'
+        ) . "<br/>";
         echo 'Expired: ' . ($token->hasExpired() ? 'true' : 'false') . "<br/>";
         // phpcs:ignore Squiz.PHP.DiscouragedFunctions.Discouraged
         echo 'Additional infos: <pre>', print_r($token->getValues(), true), '</pre>';

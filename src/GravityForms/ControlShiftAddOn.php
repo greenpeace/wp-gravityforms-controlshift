@@ -12,30 +12,50 @@ use P4\ControlShift\API\OAuthProvider;
 /**
  * ControlShift add-on class
  * Extends GFFeedAddOn to offer settings and feed processing to ControlShift
+ *
+ * @phpstan-type GFField array{
+ *  'name': string,
+ *  'type': string,
+ *  'label'?: string,
+ *  'tooltip'?: string,
+ *  'default_value'?: string,
+ *  'callback'?: callable(): void}
+ * @phpstan-type GFSection array{
+ *  'title': string,
+ *  'description'?: string,
+ *  'fields': array{GFField}}
+ * @phpstan-type GFFeed array{'meta': array<string, string>}
+ * @phpstan-type GFEntry array<string, string>
+ * @phpstan-type GFForm array<string, string>
+ * @phpstan-type TokenData array<string, string>
  */
 class ControlShiftAddOn extends GFFeedAddOn
 {
     public const TEXT_DOMAIN = 'wp-gravityforms-controlshift';
 
     // phpcs:disable PSR2.Classes.PropertyDeclaration.Underscore
-    // phpcs:disable SlevomatCodingStandard.TypeHints.PropertyTypeHint.MissingAnyTypeHint
+    // phpcs:disable SlevomatCodingStandard.TypeHints.PropertyTypeHint
+    /** @var string */
     protected $_version = '1.0';
+    /** @var string */
     protected $_min_gravityforms_version = '1.9';
+    /** @var string */
     protected $_slug = 'controlshift';
+    /** @var string */
     protected $_path = 'wp-gravityforms-controlshift/controlshift.php';
+    /** @var string */
     protected $_full_path = 'wp-gravityforms-controlshift/controlshift.php';
+    /** @var string */
     protected $_title = 'Gravity Forms ControlShift add-on';
+    /** @var string */
     protected $_short_title = 'Controlshift';
     // phpcs:enable
 
     private static ?self $instance = null;
     private ?AuthenticatedAPI $api = null;
-    private array $errors = [];
 
     public function __construct()
     {
-        parent::__construct();
-
         $settings = $this->get_plugin_settings();
         if (empty($settings)) {
             return;
@@ -56,24 +76,36 @@ class ControlShiftAddOn extends GFFeedAddOn
 
     // phpcs:disable PSR1.Methods.CamelCapsMethodName.NotCamelCaps
     // phpcs:disable SlevomatCodingStandard.TypeHints.ParameterTypeHint.MissingNativeTypeHint
+    /**
+     * @return array{GFSection}
+     */
     public function plugin_settings_fields(): array
     {
         return PluginSettings::fields($this);
     }
 
     /**
-     * @param array $form
+     * @param array<string, string> $form
+     *
+     * @return array{GFSection}
      */
+    // phpcs:ignore SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter
     public function form_settings_fields($form): array
     {
-        return FormSettings::fields($this, $form);
+        return FormSettings::fields($this);
     }
 
+    /**
+     * @return array{GFSection}
+     */
     public function feed_settings_fields(): array
     {
         return FeedSettings::fields($this);
     }
 
+    /**
+     * @return array<string, string>
+     */
     public function feed_list_columns(): array
     {
         return array(
@@ -83,12 +115,18 @@ class ControlShiftAddOn extends GFFeedAddOn
     }
 
     /**
-     * @param array $feed
-     * @param array $entry
-     * @param array $form
+     * @param GFFeed $feed
+     * @param GFEntry $entry
+     * @param GFForm $form
+     *
+     * @return GFEntry
      */
     public function process_feed($feed, $entry, $form): array
     {
+        if (!$this->api) {
+            throw new \Exception('APi not initialized, missing settings ?');
+        }
+
         $petition_slug = $feed['meta']['petition_slug'] ?? null;
         if (!$petition_slug) {
             return $entry;
@@ -138,8 +176,10 @@ class ControlShiftAddOn extends GFFeedAddOn
 
     /**
      * Auth token for authenticated API calls
+     *
+     * @return TokenData|null
      */
-    public function getAuthToken(bool $forceNew = false): array
+    public function getAuthToken(bool $forceNew = false): ?array
     {
         $settings = $this->get_plugin_settings();
 
@@ -151,7 +191,6 @@ class ControlShiftAddOn extends GFFeedAddOn
             empty($settings['auth_token'])
             || $forceNew
         ) {
-            //try {
             $token = $this->api->getAccessToken(
                 $settings['authorization_code'] ?? null
             );
@@ -160,9 +199,6 @@ class ControlShiftAddOn extends GFFeedAddOn
                 $settings['auth_token'] = $token->jsonSerialize();
                 $this->update_plugin_settings($settings);
             }
-            //} catch (\Exception $e) {
-            //  $this->errors[] = (string) $e;
-            //}
         }
 
         return $settings['auth_token'] ?? null;
@@ -173,10 +209,10 @@ class ControlShiftAddOn extends GFFeedAddOn
      */
     public static function load(): void
     {
-        if (!method_exists('GFForms', 'include_feed_addon_framework')) {
+        if (!method_exists('\\GFForms', 'include_feed_addon_framework')) {
             return;
         }
 
-        \GFFeedAddOn::register(static::class);
+        GFFeedAddOn::register(static::class);
     }
 }
